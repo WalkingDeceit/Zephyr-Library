@@ -1,16 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Mar  6 11:08:40 2019
-
-@author: Abhishek Nikkudala
-"""
-
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Feb 22 15:45:14 2019
-
-"""
-
 import urllib2
 import ast
 import base64
@@ -22,21 +9,8 @@ import webbrowser
 import time
 import os
 
-class Error(Exception):
-    pass
-
-class InvalidTestCase(Error):
-    pass
-
-now = datetime.datetime.now()
-
-hostname = None
-headers = None
-cookie = None
-
-def cook():
+def getCook():
       request = Request('https://'+hostname+'/flex/services/rest/v3/user/current',headers = headers)
-   #print request.get_header('Authorization')
       response_body = urlopen(request)
       global cookie
       cookie = response_body.headers.get('Set-Cookie')
@@ -59,48 +33,34 @@ def assign_testcase_to_phase(treeid,tctId,phaseid,tcrphaseid):
     "tctIds":[tctId],
     "isExclusion": True
     }])
-    #check_server_status()                
+    
     request = Request('https://'+hostname+'/flex/services/rest/v3/assignmenttree/'+str(phaseid)+'/assign/bytree/'+str(tcrphaseid)+'?includehierarchy=false', data=values)
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
-    #response_body = urlopen(request).read()
     urlopen(request).read()
-    print '---------PHASE ASSIGN----------------'
-    #print response_body
+    
         
 def assign_testcases_to_current_user(phaseId):
-    #print phaseId
     values = """{}"""
-    #check_server_status()
     request = Request('https://'+hostname+'/flex/services/rest/v3/assignmenttree/'+str(phaseId)+'/assign', data=values)
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
-    #response_body = urlopen(request).read()
     urlopen(request).read()
-    print '---------USER ASSIGN----------------'
-    #print response_body
 
 def assign_testcases_to_anyone(tctId,phaseId):
-    #check_server_status()
-    values = json.dumps({'createRTSList': [{'tctId': tctId, 'testerId': -10, 'cyclePhaseId': phaseId}]})
+    values = json.dumps({'createRTSList': [{'tctId': tctId, 'testerId': 1, 'cyclePhaseId': phaseId}]})
     request = Request('https://'+hostname+'/flex/services/rest/v3/execution/modify', data=values)
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
-    #response_body = urlopen(request).read()
     urlopen(request).read()
-    #print response_body
-    print '---------USER ASSIGN--------------'
         
 
 ##__________ CHECK FUNCTIONS ______________##
 def check_cycle(name,release_id):
-    #print 'check_cycle'+name
-    #check_server_status()
     request = Request('https://'+hostname+'/flex/services/rest/v3/cycle/all')
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
     response_body = urlopen(request).read()
-    #print response_body
     response_body= json.loads(response_body)
     for l in range(0,len(response_body)):
         data = response_body[l]
@@ -109,13 +69,10 @@ def check_cycle(name,release_id):
     return 0
 
 def check_node(name,release_id):
-    #print 'check_node'+name
-    #check_server_status()
     request = Request('https://'+hostname+'/flex/services/rest/v3/testcasetree')
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
     response_body = urlopen(request).read()
-    #print response_body
     response_body = json.loads(response_body)
     for l in range(0,len(response_body)):
         data = response_body[l]
@@ -124,21 +81,16 @@ def check_node(name,release_id):
     return 0
     
 def check_phase(phaseName,releaseId):
-    #print 'check_phase'+phaseName
-    #check_server_status()
     response_body = get_cycles_for_release(releaseId)
     phase_list = []
     for i in range(0,len(response_body)):
         if response_body[i]['name'] == 'Zephyr Framework':
             for j in range(0,len(response_body[i]['cyclePhases'])):
-                phase_list.append(response_body[i]['cyclePhases'][j]['id'])
-    
-    
+                phase_list.append(response_body[i]['cyclePhases'][j]['id'])  
     
     if len(phase_list) == 0:
         return False
     for i in range(0,len(phase_list)):
-        #check_server_status()
         request = Request('https://'+hostname+'/flex/services/rest/v3/assignmenttree/'+str(phase_list[i]))
         request.add_header('cookie', cookie)
         request.add_header('Content-Type', 'application/json')
@@ -152,7 +104,6 @@ def check_server_status():
     try:
        request = Request('https://'+hostname+'/flex/services/rest/v3/user/current',headers = headers)
        request.add_header('cookie',cookie)
-       #response = urllib2.urlopen(req2).read()
        urlopen(request).read()
     except:
        url = 'https://'+hostname+'/flex/html5/login'
@@ -160,7 +111,6 @@ def check_server_status():
        time.sleep(10)
        browserExe = "iexplore.exe"
        os.system("taskkill /f /im "+browserExe)
-       print 'Server refreshed at '+str(time.asctime())
        
 def check_testcase(testcaseName, projectId):
     response_body = get_all_testcases_for_project(projectId)
@@ -172,7 +122,6 @@ def check_testcase(testcaseName, projectId):
 
 ##_____________ CALCULATE ____________________ ##
 def calculate_Assignments_For_Release(releaseId):
-    #check_server_status()
     request = Request('https://'+hostname+'/flex/services/rest/v3/cycle/assignments/'+str(releaseId))
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
@@ -182,7 +131,6 @@ def calculate_Assignments_For_Release(releaseId):
 
 ##_____________ CREATE ____________________ ##
 
-#"data": get_data_teststep(SourceDB,SourceTable,TargetDB,TargetTable,SourceSystem,TargetSystem),
 def create_count_teststep(testcase,SourceDB,SourceTable,TargetDB,TargetTable,SourceSystem,TargetSystem):
     values =json.dumps({
             "steps": [
@@ -194,181 +142,43 @@ def create_count_teststep(testcase,SourceDB,SourceTable,TargetDB,TargetTable,Sou
                         }
                     ]
             })
-    #check_server_status()
     URL='https://'+hostname+'/flex/services/rest/v3/testcase/'+str(testcase.phaseTctId)+'/teststep/'+str(testcase.tctId)+'/'+str(testcase.projectId)
-    #URL='https://capgemini1111.zephyrdemo.com/flex/services/rest/latest/testcase/26/teststep/30/1'
     request = Request(URL,data=values)
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
-    #print '---------Test STEP----------------'
-    #response_body = urlopen(request).read()
     urlopen(request).read()
-    #print response_body
 
-def create_teststep_new(testcase,values):
-    URL='https://'+hostname+'/flex/services/rest/v3/testcase/'+str(testcase.phaseTctId)+'/teststep/'+str(testcase.tctId)+'/'+str(testcase.projectId)
-    #check_server_status()
-    #URL='https://capgemini1111.zephyrdemo.com/flex/services/rest/latest/testcase/26/teststep/30/1'
-    request = Request(URL,data = values)
+def create_teststep(testcase,values):
+    URL='https://'+hostname+'/flex/services/rest/v3/testcase/'+str(testcase.phaseTctId)+'/teststep/detail/'+str(testcase.tctId)    
+    request = Request(URL,data = json.dumps(values[0]))
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
-    #print '---------Test STEP----------------'
-    #response_body = urlopen(request).read()
-    urlopen(request).read()
-    #print response_body
+    response = json.loads(urlopen(request).read())
+    id = int(response['id'])
     
-def create_count_teststep_data(source,target,source_system,target_system):
-    values =json.dumps({
-            "steps": [
-                    {
-                            "orderId" : 1,
-                            "step": "Source System",
-                            "data": source_system,
-                            "result":"Result" 
-                        },
-                        {
-                            "orderId" : 2,
-                            "step": "Source Table",
-                            "data": source,  
-                            "result":"Result" 
-                        },    
-                        {
-                            "orderId" : 3,
-                            "step": "Target System",
-                            "data": target_system,
-                            "result":"Result" 
-                        },
-                        {
-                            "orderId" : 4,
-                            "step": "Target Table",
-                            "data": target,
-                            "result":"Result" 
-                        },
-                        {
-                            "orderId" : 5,
-                            "step": "Count rows in Source and Target Tables",
-                            "data": "Rows of "+source+"="+"Rows of "+target,
-                            "result":"Same number of rows." 
-                        }
-                    ]
-            })
-    return values
-    
-def create_compare_teststep_data(src_sql,tgt_sql,source_system,target_system):
-    values =json.dumps({
-            "steps": [
-                    {
-                            "orderId" : 1,
-                            "step": "Source system",
-                            "data": source_system,
-                            "result":"Result" 
-                        },
-                        {
-                            "orderId" : 2,
-                            "step": "Source Table",
-                            "data": src_sql,  
-                            "result":"Result" 
-                        },    
-                        {
-                            "orderId" : 3,
-                            "step": "Target system",
-                            "data": target_system,
-                            "result":"Result" 
-                        },
-                        {
-                            "orderId" : 4,
-                            "step": "Target Table",
-                            "data": tgt_sql,
-                            "result":"Result" 
-                        },
-                        {
-                            "orderId" : 5,
-                            "step": "Compare Source and Target Tables",
-                            "data": "Rows of "+src_sql+"="+"Rows of "+tgt_sql,
-                            "result":"Similar rows." 
-                        }
-                    ]
-            })
-    return values
-
-def create_notnull_teststep_data(system,column,table):
-    values =json.dumps({
-            "steps": [
-                    {
-                            "orderId" : 1,
-                            "step": "Source system",
-                            "data": system,
-                            "result":"Result" 
-                        },
-                        {
-                            "orderId" : 2,
-                            "step": "Source Table",
-                            "data": table,  
-                            "result":"Result" 
-                        },
-                        {
-                            "orderId" : 3,
-                            "step": "Column",
-                            "data": column,  
-                            "result":"Result" 
-                        },
-                        {
-                            "orderId" : 4,
-                            "step": "Check Not Null Rows",
-                            "data": "Column to be checked : "+column,
-                            "result":"Result" 
-                        }
-                    ]
-            })
-    return values
-
-def create_duplicate_teststep_data(system,columnlist,table):
-    values =json.dumps({
-            "steps": [
-                    {
-                            "orderId" : 1,
-                            "step": "Source Details",
-                            "data": system,  
-                            "result":"Result" 
-                        },
-                        {
-                            "orderId" : 2,
-                            "step": "Source Table",
-                            "data": table,  
-                            "result":"Result" 
-                        },
-                        {
-                            "orderId" : 3,
-                            "step": "Columnlist",
-                            "data": columnlist,  
-                            "result":"Result" 
-                        },
-                        {
-                            "orderId" : 4,
-                            "step": "Check duplicates",
-                            "data": "Column list : "+columnlist,
-                            "result":"Result" 
-                        }
-                    ]
-            })
-    return values
-   
+    for i in range(1,len(values)):
+        values[i]['id']=id
+        values[i]['tcId'] = testcase.testcaseId
+        values[i]['tctId'] = testcase.tctId
+        request = Request(URL,data = json.dumps(values[i]))
+        request.add_header('cookie', cookie)
+        request.add_header('Content-Type', 'application/json')
+        response = urlopen(request).read()            
+           
 def create_cycle(releaseId):
     values = json.dumps({ 
                 "name": "Zephyr Framework", 
                 "cycleStartDate": str(now.month)+'/'+str(now.day)+'/'+str(now.year), 
-                "cycleEndDate": "12/31/2019", 
+                "cycleEndDate": "12/31/2020", 
                 "status": 0, 
                 "releaseId": releaseId
                 })
-    #check_server_status()
+    
     request = Request('https://'+hostname+'/flex/services/rest/v3/cycle',data=values)
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
     response_body = urlopen(request).read()
     response_body = json.loads(response_body)
-    print '---------Test Cycle----------------'
-    #print response_body
     return response_body['id']
 
 def create_phase(cycleId,name):
@@ -379,13 +189,11 @@ def create_phase(cycleId,name):
     "name" : name,
     "cycleId" : cycleId
     })
-    #check_server_status()
+    
     request = Request('https://'+hostname+'/flex/services/rest/v3/cycle/'+str(cycleId)+'/phase', data=values)
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
     response_body = urlopen(request).read()
-    print '---------Test Phase----------------'
-    #print response_body
     response_body = json.loads(response_body)
     return response_body['id'],response_body['tcrCatalogTreeId']
 
@@ -395,46 +203,38 @@ def create_node(name,releaseId):
         "type": "Phase",
         "releaseId": releaseId
         })
-    #check_server_status()
+    
     request = Request('https://'+hostname+'/flex/services/rest/v3/testcasetree', data=values)
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
     response_body = urlopen(request).read()
-    print '---------Test NODE----------------'
-    #print response_body
     response_body= json.loads(response_body)
     return response_body['id']
 
 def create_modules(parentId,releaseId):
-    #check_server_status()
     values = json.dumps({"name": "Count", "description": "", "type": "Module", "releaseId": releaseId})
     request = Request('https://'+hostname+'/flex/services/rest/v3/testcasetree?parentid='+str(parentId+1), data=values)
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
-    #response_body = urlopen(request).read()
+    
     urlopen(request).read()
-    #check_server_status()
     values = json.dumps({"name": "NotNULL", "description": "", "type": "Module", "releaseId": releaseId})
     request = Request('https://'+hostname+'/flex/services/rest/v3/testcasetree?parentid='+str(parentId+2), data=values)
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
-    #response_body = urlopen(request).read()
     urlopen(request).read()
-    #check_server_status()
+    
     values = json.dumps({"name": "Compare", "description": "", "type": "Module", "releaseId": releaseId})
     request = Request('https://'+hostname+'/flex/services/rest/v3/testcasetree?parentid='+str(parentId+3), data=values)
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
-    #response_body = urlopen(request).read()
     urlopen(request).read()
-    #check_server_status()
+    
     values = json.dumps({"name": "Duplicates", "description": "", "type": "Module", "releaseId": releaseId})
     request = Request('https://'+hostname+'/flex/services/rest/v3/testcasetree?parentid='+str(parentId+4), data=values)
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
-    #response_body = urlopen(request).read()
     urlopen(request).read()
-    #print response_body
 
 def create_dictionary_of_dataframes(testCases):
     columns = ['execute','source_system','source','target_system','target','executionId','testerId']
@@ -481,7 +281,6 @@ def create_dictionary_of_dataframes(testCases):
     
 def delete_frozen_testcases(phaseId,tcrTestcaseId):
     values = json.dumps({"ids":[tcrTestcaseId]})
-    #check_server_status()
     request = Request('https://'+hostname+'/flex/services/rest/v3/execution/'+str(phaseId)+'/testcase', data=values)
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
@@ -493,7 +292,6 @@ def delete_frozen_testcases(phaseId,tcrTestcaseId):
 ##_____________GET FUNCTIONS_______________##
 
 def get_all_testcases_for_project(projectId):    
-    #check_server_status()
     request = Request('https://'+hostname+'/flex/services/rest/v3/testcase?zqlquery=projectid='+str(projectId)+'&pagesize=1000')
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
@@ -502,7 +300,6 @@ def get_all_testcases_for_project(projectId):
 
 def getTestcasesForNode(nodeId,releaseId):
     pageSize = getCountOfTestcasesByPhasesIds(nodeId,releaseId)
-    #check_server_status()
     request = Request('https://'+hostname+'/flex/services/rest/v3/testcase/tree/'+str(nodeId)+'?pagesize='+str(pageSize))
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
@@ -512,7 +309,6 @@ def getTestcasesForNode(nodeId,releaseId):
 
 def get_teststep(phaseTctId):
     URL='https://'+hostname+'/flex/services/rest/v3/testcase/'+str(phaseTctId)+'/teststep'
-    #check_server_status()
     request = Request(URL)
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
@@ -531,7 +327,6 @@ def get_count_teststep_data(testcase):
       target =  response_body['steps'][3]['data']
       return source_system,source,target_system,target
    except InvalidTestCase:
-      print 'Invalid Data for '+testcase.name
       raise InvalidTestCase
         
 def get_compare_teststep_data(testcase):
@@ -543,7 +338,6 @@ def get_compare_teststep_data(testcase):
        tgt_sql =  response_body['steps'][3]['data']
        return source_system,src_sql,target_system,tgt_sql
     except InvalidTestCase:
-       print 'Invalid Data for '+testcase.name
        raise InvalidTestCase
     
 def get_notnull_teststep_data(testcase):
@@ -554,7 +348,6 @@ def get_notnull_teststep_data(testcase):
        column =  response_body['steps'][2]['data']
        return system,table,column
     except InvalidTestCase:
-       print 'Invalid Data for '+testcase.name
        raise InvalidTestCase
     
 def get_duplicate_teststep_data(testcase):
@@ -565,7 +358,6 @@ def get_duplicate_teststep_data(testcase):
        columnlist =  response_body['steps'][2]['data']
        return system,table,columnlist
     except InvalidTestCase:
-       print 'Invalid Data for '+testcase.name
        raise InvalidTestCase
     
 def get_phase_details(phaseName,releaseId):
@@ -580,7 +372,6 @@ def get_phase_details(phaseName,releaseId):
                 phase_list.append(response_body[i]['cyclePhases'][j]['id'])
     
     for i in range(0,len(phase_list)):
-        #check_server_status()
         request = Request('https://'+hostname+'/flex/services/rest/v3/assignmenttree/'+str(phase_list[i]))
         request.add_header('cookie', cookie)
         request.add_header('Content-Type', 'application/json')
@@ -591,10 +382,7 @@ def get_phase_details(phaseName,releaseId):
     return ( 0 , 0 )
     
 
-'''XXXXXX---------OUR FIRST FUNCTION--------XXXXXX'''
-
 def get_details(name,url):
-    #check_server_status()
     request = Request(url)
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
@@ -604,11 +392,8 @@ def get_details(name,url):
     for k in cont:
         if name == k['name']:
             return k['id']
-
-'''XXXXXX-----------------------------------XXXXXX'''
         
 def get_tcr_details(name,rid,url):
-    #check_server_status()
     request = Request(url)
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
@@ -630,16 +415,10 @@ def get_teststep_data(SourceDB,SourceTable,TargetDB,TargetTable,SourceSystem,Tar
             return data
 
 def get_project_id(name):
-    #check_server_status()
     request = Request('https://'+hostname+'/flex/services/rest/latest/project/')
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
-    '''response_body = urlopen(request).read()
-    response_body = json.loads(response_body)
-    for k in response_body:
-        if name == k['name']:
-            return k['id']
-    '''
+    
     response_body = urlopen(request).read()
     response_body = json.loads(response_body)
     for k in response_body:
@@ -649,7 +428,6 @@ def get_project_id(name):
     raise InvalidTestCase,string
 
 def get_release_id(name,projectId):
-    #check_server_status()
     request = Request('https://'+hostname+'/flex/services/rest/latest/release/project/'+str(projectId))
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
@@ -674,33 +452,20 @@ def getTestcaseNames(response_body):
     return names
 
 def get_execution_details(testcaseId):
-    print '-----------Execution ----------------'
-    #check_server_status()
     request = Request('https://'+hostname+'/flex/services/rest/v3/execution?pagesize=1000')
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
     response_body = urlopen(request).read()
-    #print response_body
     response_body= json.loads(response_body)
     return response_body
-    '''for l in range(0,len(response_body['results'])):
-        data = response_body['results'][l]
-        #print data
-        if testcaseId == data['tcrTreeTestcase']['testcase']['testcaseId']:
-            #print data['id'],data['testerId']
-            return data['id'],data['testerId']
-    return 0,0     '''
     
 def get_step_data(module,testcaseVersionId):
-    #check_server_status()
     request = Request('https://'+hostname+'/flex/services/rest/v3/testcase/'+str(testcaseVersionId)+'/teststep')
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
     response_body = urlopen(request).read()
-    #print response_body
     response_body = json.loads(response_body)
     response_body = response_body['steps'][0]['data']
-    #response_body = json.loads(response_body)
     st= response_body.encode('ascii','ignore')
     response_body = ast.literal_eval(st)
     if module == 'count':
@@ -711,15 +476,7 @@ def get_step_data(module,testcaseVersionId):
         return response_body['columnlist'].encode('ascii','ignore'),response_body['system'].encode('ascii','ignore'),response_body['table'].encode('ascii','ignore')
     if module == 'compare' :
         return response_body['system'].encode('ascii','ignore'),response_body['src_sql'].encode('ascii','ignore'),response_body['tgt_sql'].encode('ascii','ignore')
-
-def get_status_id(status):
-    if status == 'True':
-        return 1
-    elif status == 'Execution Failed':
-        return 10
-    else:
-        return 2
-     
+    
 def getPlanningGridTcts(tcrphaseId):
     request = Request('https://'+hostname+'/flex/services/rest/v3/testcase/planning/'+str(tcrphaseId))
     request.add_header('cookie', cookie)
@@ -728,33 +485,27 @@ def getPlanningGridTcts(tcrphaseId):
     response_body = json.loads(response_body)
     return response_body
    
-   
 def get_execution_tct_id(testcaseId,tcrphaseId):
-    #check_server_status()
     request = Request('https://'+hostname+'/flex/services/rest/v3/testcase/planning/'+str(tcrphaseId))
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
     response_body = urlopen(request).read()
     response_body = json.loads(response_body)
-    #response_body = getPlanningGridTcts(tcrphaseId)
     for data in range(0,len(response_body['results'])):
         if response_body['results'][data]['testcase']['testcaseId']==testcaseId:
             return response_body['results'][data]['tct']['id']
     
 def get_cycle_id(name,releaseId):
-    #check_server_status()
     request = Request('https://'+hostname+'/flex/services/rest/v3/cycle/all')
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
     response_body = urlopen(request).read()
-    #print response_body
     response_body = json.loads(response_body)
     for i in range(0,len(response_body)):
         if releaseId == response_body[i]['releaseId'] and name == response_body[i]['name']:
             return response_body[i]['id']
     
 def get_all_project_details():
-    #check_server_status()
     request = Request('https://'+hostname+'/flex/services/rest/v3/project')
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
@@ -762,7 +513,6 @@ def get_all_project_details():
     return json.loads(response_body)
 
 def get_all_release_for_project(projectId):
-    #check_server_status()
     request = Request('https://'+hostname+'/flex/services/rest/v3/release/project/'+str(projectId))
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
@@ -770,17 +520,14 @@ def get_all_release_for_project(projectId):
     return json.loads(response_body)
 
 def get_cycles_for_release(releaseId):
-    #check_server_status()
     request = Request('https://'+hostname+'/flex/services/rest/v3/cycle/release/'+str(releaseId))
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
     response_body = urlopen(request).read()
-    #print response_body
     return json.loads(response_body)
     
 def get_phases_of_zephyr_cycle(response_body):
     phaseIds = []
-    print 'lg'
     for i in range(0,len(response_body)):
         if response_body[i]['name'] == 'Zephyr Framework':
             for j in range(0,len(response_body[i]['cyclePhases'])):
@@ -788,7 +535,6 @@ def get_phases_of_zephyr_cycle(response_body):
     return phaseIds
 
 def getTCRCatalogTreeNodes():
-    #check_server_status()
     request = Request('https://'+hostname+'/flex/services/rest/v3/testcasetree')
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
@@ -805,7 +551,7 @@ def getZephyrNodesId(responseBody,releaseId):
 
 def get_phase_testcasetree_details(tcrPhaseId,releaseId):
     pageSize = getCountOfTestcasesByPhase(tcrPhaseId,releaseId)
-    #check_server_status()
+    
     request = Request('https://'+hostname+'/flex/services/rest/v3/testcase/planning/'+str(tcrPhaseId)+'?pagesize='+str(pageSize))
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
@@ -813,7 +559,6 @@ def get_phase_testcasetree_details(tcrPhaseId,releaseId):
     return json.loads(response_body)
 
 def get_Node(phaseId):
-    #check_server_status()
     request = Request('https://'+hostname+'/flex/services/rest/v3/testcasetree/'+str(phaseId))
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
@@ -821,7 +566,6 @@ def get_Node(phaseId):
     return json.loads(response_body)
 
 def getCountOfTestcasesByPhase(tcrCatalogTreeId,releaseId):
-    #check_server_status()
     request = Request('https://'+hostname+'/flex/services/rest/v3/testcase/count?tcrcatalogtreeid='+str(tcrCatalogTreeId)+'&releaseid='+str(releaseId))
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
@@ -829,7 +573,6 @@ def getCountOfTestcasesByPhase(tcrCatalogTreeId,releaseId):
     return response_body
 
 def getCountOfTestcasesByPhasesIds(treeId,releaseId):
-    #check_server_status()
     request = Request('https://'+hostname+'/flex/services/rest/v3/testcase/count/ids?treeids='+str(treeId))
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
@@ -839,16 +582,15 @@ def getCountOfTestcasesByPhasesIds(treeId,releaseId):
         return response_body[0]['testcaseCount']
     else :
         return 0
-#________ UPDATE FUNCTIONS __________________##
+    
+#_________________UPDATE FUNCTIONS __________________##
 
 def update_testcase_status(executionId,statusId,testerId):
     values="""{}"""
-    #check_server_status()
-    request = Request('https://'+hostname+'/flex/services/rest/v3/execution/'+str(executionId)+'?status='+str(statusId)+'&testerid='+str(testerId),data=values)
+    request = Request('https://'+hostname+'/flex/services/rest/v3/execution/'+str(executionId)+'?status='+str(statusId)+'&testerid='+str(testerId)+'&allExecutions=false&includeanyoneuser=true',data=values)
     request.add_header('cookie', cookie)
     request.add_header('Content-Type', 'application/json')
     request.get_method = lambda: 'PUT'
-    #response_body = urlopen(request).read()
     urlopen(request).read()
 
 def update_testcase_execution_notes(executionId,testerId,notes):
