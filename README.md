@@ -21,7 +21,7 @@ Voila! You're there.
 - Johanan Abhishek
 
 ## License
-This project is licensed under the MIT License - see the LICENSE.txt file for details
+This project is licensed under the MIT License - Refer LICENSE.txt file for details
 
 
      
