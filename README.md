@@ -1,5 +1,5 @@
 # Zephyr-Library (Python 2.7)
-Backend Library in Python for Zephyr Integration with custom applications!
+Backend Library in Python for Zephyr Integration with custom applications.
 
 The Library can be used to develop a custom client to Automate testcase creation, 
 execution, Adding description, creating cycles/Phases in SDLC, Assign the created 
