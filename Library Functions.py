@@ -1,3 +1,10 @@
+"""
+Custom Library in python for Integrating Zephyr with user interfaces.
+Version : Zephyr 6.5
+Last Updated : Jan 12, 2019
+Author : Abhishek Yadav, Johanan Abhishek
+ENJOY!
+"""
 import urllib2
 import ast
 import base64
