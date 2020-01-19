@@ -17,7 +17,7 @@ Voila! You're there.
   Discalimer : Documentation isn't accurate, I would suggest monitoring network calls to
                generate payloads and API requests.
 ## Authors
-- Abhishek Yadav (github.com/WalkingDeceit)
+- Abhishek Yadav (github.com/nikksabhishek)
 - Johanan Abhishek
 
 ## License
